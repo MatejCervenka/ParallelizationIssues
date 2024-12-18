@@ -3,6 +3,18 @@ body {
     background-color: #f4f4f9;
     margin: 0;
     padding: 0;
+    text-align: center;
+}
+
+#log {
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 600px;
+    height: 300px;
+    overflow-y: scroll;
+    font-family: monospace;
 }
 
 header {
