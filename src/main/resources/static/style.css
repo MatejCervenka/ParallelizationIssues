@@ -1,7 +1,7 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f9;
-    margin: 0;
+    margin: 50px 0 0 0;
     padding: 0;
     text-align: center;
 }
@@ -25,7 +25,7 @@ header {
 }
 
 h1 {
-    margin: 0;
+    margin: 0 0 20px 0;
 }
 
 /* Sekce tlačítek */
@@ -57,7 +57,26 @@ button:active {
     transform: scale(0.98);
 }
 
-/* Informace v zápatí */
+.return-button {
+    background-color: #737373;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 15px 30px;
+    margin: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.return-button:hover {
+    background-color: #464646;
+}
+
+.return-button:active {
+    transform: scale(0.98);
+}
+
 footer {
     background-color: #333;
     color: white;

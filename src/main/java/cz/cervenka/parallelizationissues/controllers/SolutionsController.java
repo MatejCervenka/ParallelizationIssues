@@ -1,7 +1,7 @@
 package cz.cervenka.parallelizationissues.controllers;
 
 import cz.cervenka.parallelizationissues.objects.SimulationTask;
-import cz.cervenka.parallelizationissues.services.SimulationService;
+import cz.cervenka.parallelizationissues.services.SolutionService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,13 +12,13 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
-@RequestMapping("/simulate-problems")
-public class SimulationController {
+@RequestMapping("/simulate-solutions")
+public class SolutionsController {
 
     private final ConcurrentHashMap<String, SimulationTask> currentTasks = new ConcurrentHashMap<>();
-    private final SimulationService service;
+    private final SolutionService service;
 
-    public SimulationController(SimulationService service) {
+    public SolutionsController(SolutionService service) {
         this.service = service;
     }
 
@@ -57,16 +57,11 @@ public class SimulationController {
 
     @GetMapping("/stop")
     public void stopSimulation(HttpServletResponse response) throws IOException {
-        response.sendRedirect("/problems");
+        response.sendRedirect("/solutions");
         SimulationTask task = currentTasks.get("current");
         if (task != null) {
             task.interruptAll();
             currentTasks.remove("current");
         }
-    }
-
-    @GetMapping("/logs")
-    public String getLogs() {
-        return service.getLogs();
     }
 }
