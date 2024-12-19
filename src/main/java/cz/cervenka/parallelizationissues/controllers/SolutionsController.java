@@ -1,6 +1,6 @@
 package cz.cervenka.parallelizationissues.controllers;
 
-import cz.cervenka.parallelizationissues.objects.SimulationTask;
+import cz.cervenka.parallelizationissues.util.SimulationTask;
 import cz.cervenka.parallelizationissues.services.SolutionService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
@@ -30,7 +30,7 @@ public class SolutionsController {
         service.solveDeadlock(task);
 
         model.addAttribute("simulation", "Deadlock simulation is running. Please observe the behavior...");
-        return "problem_simulation";
+        return "solution_simulation";
     }
 
     @GetMapping("/starvation-page")
@@ -41,7 +41,7 @@ public class SolutionsController {
         service.solveStarvation(task);
 
         model.addAttribute("simulation", "Starvation simulation is running. Please observe the behavior...");
-        return "problem_simulation";
+        return "solution_simulation";
     }
 
     @GetMapping("/livelock-page")
@@ -52,7 +52,7 @@ public class SolutionsController {
         service.solveLivelock(task);
 
         model.addAttribute("simulation", "Livelock simulation is running. Please observe the behavior...");
-        return "problem_simulation";
+        return "solution_simulation";
     }
 
     @GetMapping("/stop")

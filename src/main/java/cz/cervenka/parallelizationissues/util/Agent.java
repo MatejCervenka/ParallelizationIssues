@@ -1,4 +1,4 @@
-package cz.cervenka.parallelizationissues.objects;
+package cz.cervenka.parallelizationissues.util;
 
 public class Agent {
 

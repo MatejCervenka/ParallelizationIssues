@@ -1,4 +1,4 @@
-package cz.cervenka.parallelizationissues.objects;
+package cz.cervenka.parallelizationissues.util;
 
 import java.util.ArrayList;
 import java.util.List;

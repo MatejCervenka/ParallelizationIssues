@@ -51,30 +51,48 @@
             transform: scale(0.98);
         }
 
-        /* Informace v zápatí */
-        footer {
-            background-color: #333;
-            color: white;
-            text-align: center;
+        #simulation-output {
+            max-height: 500px;
+            overflow-y: auto;
             padding: 10px;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-
-        footer a {
-            color: #4caf50;
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
+            border: 1px solid #545454;
+            background-color: #f9f9f9;
+            font-family: monospace;
+            white-space: pre-wrap;
         }
     </style>
 </head>
 <body>
 <h1>Simulation In Progress</h1>
-<p>Check the server logs for details about the simulation.</p>
+<div id="simulation-output">
+    <h3>Simulation Logs:</h3>
+</div>
 <button onclick="window.location.href='/simulate-problems/stop'">Stop Simulation and Return</button>
+
 </body>
+<script>
+    const simulationType = window.location.pathname.split('/').pop(); // e.g., "deadlock-page"
+    const wsEndpoint = `/ws/problems/${simulationType.replace("-page", "")}`;
+    const socket = new WebSocket(`ws://localhost:8082${wsEndpoint}`);
+
+    socket.onopen = () => {
+        console.log("WebSocket connection established");
+    };
+
+    socket.onmessage = (event) => {
+        const message = event.data;
+        const outputDiv = document.getElementById("simulation-output");
+        const newMessage = document.createElement("p");
+        newMessage.textContent = message;
+        outputDiv.appendChild(newMessage);
+    };
+
+    socket.onerror = (error) => {
+        console.error("WebSocket error: ", error);
+    };
+
+    socket.onclose = () => {
+        console.log("WebSocket connection closed");
+    };
+</script>
 </html>

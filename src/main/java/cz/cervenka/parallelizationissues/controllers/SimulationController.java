@@ -1,6 +1,6 @@
 package cz.cervenka.parallelizationissues.controllers;
 
-import cz.cervenka.parallelizationissues.objects.SimulationTask;
+import cz.cervenka.parallelizationissues.util.SimulationTask;
 import cz.cervenka.parallelizationissues.services.SimulationService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
@@ -63,10 +63,5 @@ public class SimulationController {
             task.interruptAll();
             currentTasks.remove("current");
         }
-    }
-
-    @GetMapping("/logs")
-    public String getLogs() {
-        return service.getLogs();
     }
 }
