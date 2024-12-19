@@ -27,7 +27,7 @@ public class SolutionsController {
         SimulationTask task = new SimulationTask();
         currentTasks.put("current", task);
 
-        service.simulateDeadlock(task);
+        service.solveDeadlock(task);
 
         model.addAttribute("simulation", "Deadlock simulation is running. Please observe the behavior...");
         return "problem_simulation";
@@ -38,7 +38,7 @@ public class SolutionsController {
         SimulationTask task = new SimulationTask();
         currentTasks.put("current", task);
 
-        service.simulateStarvation(task);
+        service.solveStarvation(task);
 
         model.addAttribute("simulation", "Starvation simulation is running. Please observe the behavior...");
         return "problem_simulation";
@@ -49,7 +49,7 @@ public class SolutionsController {
         SimulationTask task = new SimulationTask();
         currentTasks.put("current", task);
 
-        service.simulateLivelock(task);
+        service.solveLivelock(task);
 
         model.addAttribute("simulation", "Livelock simulation is running. Please observe the behavior...");
         return "problem_simulation";

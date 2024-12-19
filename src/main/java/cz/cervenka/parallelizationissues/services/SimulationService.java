@@ -23,7 +23,7 @@ public class SimulationService {
             synchronized (resourceA) {
                 System.out.println("Thread 1: Locked Resource A.");
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(1000); // Simulate some work
                 } catch (InterruptedException e) {
                     System.out.println("Thread 1 interrupted.");
                     Thread.currentThread().interrupt();
