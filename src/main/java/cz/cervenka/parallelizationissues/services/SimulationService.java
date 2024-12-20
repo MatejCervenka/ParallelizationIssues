@@ -196,7 +196,7 @@ public class SimulationService {
         Thread thread1 = new Thread(() -> {
             try {
                 while (!Thread.currentThread().isInterrupted()) {
-                    if (agent2.isActing()) {
+                    if (!agent2.isActing()) {
                         agent1.act();
                         System.out.println("Thread 1: Adjusting...");
                         webSocketHandler.broadcast("/ws/problems/livelock", "Thread 1: Adjusting...");
@@ -213,7 +213,7 @@ public class SimulationService {
         Thread thread2 = new Thread(() -> {
             try {
                 while (!Thread.currentThread().isInterrupted()) {
-                    if (agent1.isActing()) {
+                    if (!agent1.isActing()) {
                         agent2.act();
                         System.out.println("Thread 2: Adjusting...");
                         webSocketHandler.broadcast("/ws/problems/livelock", "Thread 2: Adjusting...");
