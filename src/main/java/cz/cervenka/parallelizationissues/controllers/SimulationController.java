@@ -1,5 +1,6 @@
 package cz.cervenka.parallelizationissues.controllers;
 
+import cz.cervenka.parallelizationissues.config.SimulationWebSocketHandler;
 import cz.cervenka.parallelizationissues.util.SimulationTask;
 import cz.cervenka.parallelizationissues.services.SimulationService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.socket.CloseStatus;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,14 +23,16 @@ public class SimulationController {
 
     private final ConcurrentHashMap<String, SimulationTask> currentTasks = new ConcurrentHashMap<>();
     private final SimulationService service;
+    private final SimulationWebSocketHandler webSocketHandler;
 
     /**
      * Constructs a new SimulationController with the given SimulationService.
      *
      * @param service The SimulationService to be used for running simulations.
      */
-    public SimulationController(SimulationService service) {
+    public SimulationController(SimulationService service, SimulationWebSocketHandler webSocketHandler) {
         this.service = service;
+        this.webSocketHandler = webSocketHandler;
     }
 
     /**
@@ -43,7 +47,7 @@ public class SimulationController {
         SimulationTask task = new SimulationTask();
         currentTasks.put("current", task);
 
-        service.simulateDeadlock(task);
+        service.runSimulateDeadlock(task);
 
         model.addAttribute("simulation", "Deadlock simulation is running. Please observe the behavior...");
         return "problem_simulation";
@@ -61,7 +65,7 @@ public class SimulationController {
         SimulationTask task = new SimulationTask();
         currentTasks.put("current", task);
 
-        service.simulateStarvation(task);
+        service.runSimulateStarvation(task);
 
         model.addAttribute("simulation", "Starvation simulation is running. Please observe the behavior...");
         return "problem_simulation";
@@ -79,7 +83,7 @@ public class SimulationController {
         SimulationTask task = new SimulationTask();
         currentTasks.put("current", task);
 
-        service.simulateLivelock(task);
+        service.runSimulateLivelock(task);
 
         model.addAttribute("simulation", "Livelock simulation is running. Please observe the behavior...");
         return "problem_simulation";
@@ -99,6 +103,20 @@ public class SimulationController {
         if (task != null) {
             task.interruptAll();
             currentTasks.remove("current");
+            webSocketHandler.broadcast("/ws/problems/starvation", "Simulation stopped.");
+            closeAllWebSocketSessions();
         }
+    }
+
+    private void closeAllWebSocketSessions() {
+        webSocketHandler.getSessionMap().forEach((session, status) -> {
+            try {
+                if (session.isOpen()) {
+                    session.close(CloseStatus.NORMAL);
+                }
+            } catch (IOException e) {
+                System.err.println("Failed to close WebSocket session: " + e.getMessage());
+            }
+        });
     }
 }

@@ -7,25 +7,44 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 
+/**
+ * Service class responsible for managing concurrency problem simulations.
+ * This class handles the simulation of deadlock, starvation, and livelock issues and interacts with the WebSocketHandler
+ * to broadcast simulation updates.
+ */
 @Service
 @Component
 public class SimulationService {
 
     private final SimulationWebSocketHandler webSocketHandler;
     private Runnable currentSimulation;
-    private final Object lock = new Object();
 
-
+    /**
+     * Constructs a new SimulationService with the given SimulationWebSocketHandler.
+     * Initializes the WebSocket connection callback to start simulations when the connection is established.
+     *
+     * @param webSocketHandler The SimulationWebSocketHandler for managing WebSocket interactions.
+     */
     public SimulationService(SimulationWebSocketHandler webSocketHandler) {
         this.webSocketHandler = webSocketHandler;
         this.webSocketHandler.setOnConnectionEstablishedCallback(this::startSimulation);
     }
 
-
+    /**
+     * Starts a deadlock simulation and broadcasts messages to WebSocket clients.
+     *
+     * @param task The SimulationTask that manages the simulation threads.
+     */
     public void simulateDeadlock(SimulationTask task) {
         runSimulation(() -> runSimulateDeadlock(task));
     }
 
+    /**
+     * Executes the deadlock simulation logic.
+     * It creates two threads that attempt to lock two resources in a way that causes a deadlock.
+     *
+     * @param task The SimulationTask that manages the simulation threads.
+     */
     public void runSimulateDeadlock(SimulationTask task) {
         System.out.println("Deadlock simulation started...");
         webSocketHandler.broadcast("/ws/problems/deadlock", "Deadlock simulation started...");
@@ -80,11 +99,22 @@ public class SimulationService {
         task.startAll();
     }
 
-
+    /**
+     * Starts a starvation simulation and broadcasts messages to WebSocket clients.
+     *
+     * @param task The SimulationTask that manages the simulation threads.
+     */
     public void simulateStarvation(SimulationTask task) {
         runSimulation(() -> runSimulateStarvation(task));
     }
 
+    /**
+     * Executes the starvation simulation logic.
+     * It creates two threads: one for a high-priority task and one for a low-priority task.
+     * The low-priority task simulates starvation by waiting for the high-priority task to complete.
+     *
+     * @param task The SimulationTask that manages the simulation threads.
+     */
     public void runSimulateStarvation(SimulationTask task) {
         System.out.println("Starvation simulation started...");
         webSocketHandler.broadcast("/ws/problems/starvation", "Starvation simulation started...");
@@ -113,6 +143,13 @@ public class SimulationService {
         task.startAll();
     }
 
+    /**
+     * Creates and returns a runnable task for a high-priority user.
+     * The task simulates the high-priority user booking a slot periodically.
+     *
+     * @param webSocketHandler The SimulationWebSocketHandler for broadcasting simulation updates.
+     * @return The runnable task for the high-priority user.
+     */
     private static Runnable getRunnable(SimulationWebSocketHandler webSocketHandler) {
         Object reservationLock = new Object();
 
@@ -133,10 +170,22 @@ public class SimulationService {
         };
     }
 
+    /**
+     * Starts a livelock simulation and broadcasts messages to WebSocket clients.
+     *
+     * @param task The SimulationTask that manages the simulation threads.
+     */
     public void simulateLivelock(SimulationTask task) {
         runSimulation(() -> runSimulateLivelock(task));
     }
 
+    /**
+     * Executes the livelock simulation logic.
+     * Two agents act in a way that causes them to keep adjusting without making progress,
+     * resulting in a livelock.
+     *
+     * @param task The SimulationTask that manages the simulation threads.
+     */
     public void runSimulateLivelock(SimulationTask task) {
         System.out.println("Livelock simulation started...");
         webSocketHandler.broadcast("/ws/problems/livelock", "Livelock simulation started...");
@@ -183,11 +232,16 @@ public class SimulationService {
         task.startAll();
     }
 
-
-    public void runSimulation(Runnable simulation) {
-        synchronized (lock) {
-            System.out.println("Setting up new simulation...");
+    /**
+     * Runs the provided simulation in a synchronized manner.
+     * It checks the WebSocket connection status before starting the simulation.
+     *
+     * @param simulation The simulation to be executed.
+     */
+    private void runSimulation(Runnable simulation) {
+        synchronized (this) {
             this.currentSimulation = simulation;
+            System.out.println("Simulation set. Checking WebSocket connection status...");
 
             if (webSocketHandler.isConnectionEstablished()) {
                 System.out.println("WebSocket connection is ready. Starting simulation immediately.");
@@ -198,8 +252,11 @@ public class SimulationService {
         }
     }
 
+    /**
+     * Starts the simulation if it has been set and the WebSocket connection is established.
+     */
     private void startSimulation() {
-        synchronized (lock) {
+        synchronized (this) {
             System.out.println("Checking if simulation can be started...");
             if (currentSimulation != null) {
                 System.out.println("Starting simulation...");
@@ -210,6 +267,4 @@ public class SimulationService {
             }
         }
     }
-
-
 }

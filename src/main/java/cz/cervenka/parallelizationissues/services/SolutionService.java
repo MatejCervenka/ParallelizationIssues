@@ -9,6 +9,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 
+/**
+ * Service class for handling the simulation of concurrency issue solutions.
+ * This class manages different types of solutions for deadlock, starvation, and livelock.
+ */
 @Service
 @Component
 public class SolutionService {
@@ -16,17 +20,32 @@ public class SolutionService {
     private final SimulationWebSocketHandler webSocketHandler;
     private Runnable currentSimulation;
 
-
+    /**
+     * Constructs a new SolutionService with the given SimulationWebSocketHandler.
+     *
+     * @param webSocketHandler The SimulationWebSocketHandler to be used for broadcasting simulation updates.
+     */
     public SolutionService(SimulationWebSocketHandler webSocketHandler) {
         this.webSocketHandler = webSocketHandler;
         this.webSocketHandler.setOnConnectionEstablishedCallback(this::startSimulation);
     }
 
-
+    /**
+     * Solves the deadlock simulation by initiating two threads that simulate a deadlock scenario.
+     * Broadcasts the progress of the simulation through WebSocket.
+     *
+     * @param task The SimulationTask to be used for managing threads and simulation progress.
+     */
     public void solveDeadlock(SimulationTask task) {
         runSimulation(() -> runSolveDeadlock(task));
     }
 
+    /**
+     * Runs the deadlock simulation by creating two threads that lock resources in conflicting orders.
+     * Simulates a deadlock scenario and broadcasts each step.
+     *
+     * @param task The SimulationTask to manage threads.
+     */
     public void runSolveDeadlock(SimulationTask task) {
         System.out.println("Deadlock solutions simulation started...");
         webSocketHandler.broadcast("/ws/solutions/deadlock", "Deadlock solutions simulation started...");
@@ -76,11 +95,23 @@ public class SolutionService {
         task.startAll();
     }
 
-
+    /**
+     * Solves the starvation simulation by initiating threads with different priorities.
+     * The threads attempt to lock a shared resource, with one having a higher priority.
+     * Broadcasts the progress of the simulation through WebSocket.
+     *
+     * @param task The SimulationTask to manage threads and simulation progress.
+     */
     public void solveStarvation(SimulationTask task) {
         runSimulation(() -> runSolveStarvation(task));
     }
 
+    /**
+     * Runs the starvation simulation by creating two threads with a fair lock mechanism.
+     * Simulates a starvation scenario where a low-priority thread waits for a high-priority thread to release a lock.
+     *
+     * @param task The SimulationTask to manage threads.
+     */
     private void runSolveStarvation(SimulationTask task) {
         System.out.println("Starvation solutions simulation started...");
         webSocketHandler.broadcast("/ws/solutions/starvation", "Starvation solutions simulation started...");
@@ -122,10 +153,22 @@ public class SolutionService {
         task.startAll();
     }
 
+    /**
+     * Solves the livelock simulation by initiating two agents that attempt to adjust their state.
+     * Broadcasts the progress of the simulation through WebSocket.
+     *
+     * @param task The SimulationTask to manage threads and simulation progress.
+     */
     public void solveLivelock(SimulationTask task) {
         runSimulation(() -> runSolveLivelock(task));
     }
 
+    /**
+     * Runs the livelock simulation by creating two agents that adjust their actions while avoiding a livelock.
+     * The agents attempt to adjust their behavior to break the livelock after a set number of attempts.
+     *
+     * @param task The SimulationTask to manage threads.
+     */
     public void runSolveLivelock(SimulationTask task) {
         System.out.println("Livelock solutions simulation started...");
         webSocketHandler.broadcast("/ws/solutions/livelock", "Livelock solutions simulation started...");
@@ -187,6 +230,12 @@ public class SolutionService {
         task.startAll();
     }
 
+    /**
+     * Runs a simulation by setting the current simulation to the provided task and checking if a WebSocket connection is established.
+     * If the connection is established, it starts the simulation immediately.
+     *
+     * @param simulation The Runnable representing the simulation task to be run.
+     */
     private void runSimulation(Runnable simulation) {
         synchronized (this) {
             this.currentSimulation = simulation;
@@ -201,13 +250,16 @@ public class SolutionService {
         }
     }
 
+    /**
+     * Starts the simulation if a simulation task is set and the WebSocket connection is established.
+     */
     private void startSimulation() {
         synchronized (this) {
             System.out.println("Checking if simulation can be started...");
             if (currentSimulation != null) {
                 System.out.println("Starting simulation...");
                 currentSimulation.run();
-                currentSimulation = null; // Clear after starting
+                currentSimulation = null;
             } else {
                 System.out.println("No simulation to start.");
             }

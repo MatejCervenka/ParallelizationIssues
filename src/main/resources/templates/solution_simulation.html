@@ -60,6 +60,18 @@
             font-family: monospace;
             white-space: pre-wrap;
         }
+
+        #documentation {
+            margin-top: 20px;
+            padding: 10px;
+            border-top: 2px solid #4caf50;
+            font-size: 16px;
+            color: #333;
+            text-align: left;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
 </head>
 <body>
@@ -67,12 +79,46 @@
 <div id="simulation-output">
     <h3>Simulation Logs:</h3>
 </div>
+
+<div id="documentation"></div>
+
 <button onclick="window.location.href='/simulate-solutions/stop'">Stop Simulation and Return</button>
 </body>
 <script>
-    const simulationType = window.location.pathname.split('/').pop(); // e.g., "deadlock-page"
+    const simulationType = window.location.pathname.split('/').pop();
     const wsEndpoint = `/ws/solutions/${simulationType.replace("-page", "")}`;
     const socket = new WebSocket(`ws://localhost:8082${wsEndpoint}`);
+
+    const documentationContent = {
+        deadlock: {
+            solution: "Deadlock can be prevented using techniques like resource ordering, deadlock detection and recovery, or ensuring resources are acquired in a specific sequence.",
+            applicationSolution: "In this application, the deadlock solution is demonstrated by enforcing a consistent locking order of resources (Resource A, then Resource B). Two threads attempt to acquire these resources, but the simulation intentionally creates a deadlock scenario to highlight the problem and its resolution."
+        },
+        starvation: {
+            solution: "Starvation can be mitigated by using fair scheduling algorithms, such as round-robin, or by setting maximum wait times for resources.",
+            applicationSolution: "The starvation simulation in this application uses a `ReentrantLock` with fairness enabled. This ensures that threads (e.g., high-priority and low-priority) acquire the lock in a fair manner, preventing indefinite blocking of lower-priority threads. Each thread repeatedly attempts to reserve a shared resource to illustrate the solution."
+        },
+        livelock: {
+            solution: "Livelock can be avoided by implementing mechanisms like retry limits or prioritization rules to break the cycle.",
+            applicationSolution: "In this application, livelock is solved by introducing a retry limit to break the adjustment cycle between two agents. The agents simulate threads that continuously adjust their actions in response to each other. After a set number of attempts, the livelock is resolved by allowing one thread to proceed, breaking the cycle."
+        }
+    };
+
+    const documentationDiv = document.getElementById("documentation");
+    const typeKey = simulationType.replace("-page", "");
+
+    if (documentationContent[typeKey]) {
+        const solutionText = documentationContent[typeKey].solution;
+        const applicationSolutionText = documentationContent[typeKey].applicationSolution;
+
+        documentationDiv.innerHTML = `
+        <h3>Documentation:</h3>
+        <p><strong>Solution:</strong> ${solutionText}</p>
+        <p><strong>Application Solution:</strong> ${applicationSolutionText}</p>
+    `;
+    } else {
+        console.log('Invalid typeKey:', typeKey);
+    }
 
     socket.onopen = () => {
         console.log("WebSocket connection established");

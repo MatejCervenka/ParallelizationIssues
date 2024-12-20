@@ -60,6 +60,18 @@
             font-family: monospace;
             white-space: pre-wrap;
         }
+
+        #documentation {
+            margin-top: 20px;
+            padding: 10px;
+            border-top: 2px solid #4caf50;
+            font-size: 16px;
+            color: #333;
+            text-align: left;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
 </head>
 <body>
@@ -67,6 +79,9 @@
 <div id="simulation-output">
     <h3>Simulation Logs:</h3>
 </div>
+
+<div id="documentation"></div>
+
 <button onclick="window.location.href='/simulate-problems/stop'">Stop Simulation and Return</button>
 
 </body>
@@ -74,6 +89,37 @@
     const simulationType = window.location.pathname.split('/').pop(); // e.g., "deadlock-page"
     const wsEndpoint = `/ws/problems/${simulationType.replace("-page", "")}`;
     const socket = new WebSocket(`ws://localhost:8082${wsEndpoint}`);
+
+    const documentationContent = {
+        deadlock: {
+            problem: "A deadlock occurs when a group of processes become stuck because each process is waiting for a resource that another process in the group is holding. No process can proceed.",
+            simulation: "In this simulation, multiple threads attempt to acquire two resources in a specific order. If one thread acquires the first resource but another acquires the second resource, they both end up waiting indefinitely for the other resource, creating a deadlock.",
+        },
+        starvation: {
+            problem: "Starvation occurs when a process is perpetually denied access to necessary resources because higher-priority processes continuously preempt it.",
+            simulation: "In this simulation, threads with lower priority are consistently blocked by higher-priority threads, causing the lower-priority threads to never get access to the shared resource.",
+        },
+        livelock: {
+            problem: "A livelock occurs when processes continuously change their state in response to each other without making any progress.",
+            simulation: "In this simulation, two threads repeatedly release and request a resource in an attempt to avoid a deadlock, but their mutual avoidance leads to a state where neither makes progress.",
+        }
+    };
+
+    const documentationDiv = document.getElementById("documentation");
+    const typeKey = simulationType.replace("-page", "");
+
+    if (documentationContent[typeKey]) {
+        const problemText = documentationContent[typeKey].problem;
+        const simulationText = documentationContent[typeKey].simulation;
+
+        documentationDiv.innerHTML = `
+        <h3>Documentation:</h3>
+        <p><strong>Problem:</strong> ${problemText}</p>
+        <p><strong>Simulation:</strong> ${simulationText}</p>
+    `;
+    } else {
+        console.log('Invalid typeKey:', typeKey);
+    }
 
     socket.onopen = () => {
         console.log("WebSocket connection established");
