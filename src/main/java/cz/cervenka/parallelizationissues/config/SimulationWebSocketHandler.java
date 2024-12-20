@@ -22,7 +22,7 @@ public class SimulationWebSocketHandler extends TextWebSocketHandler {
     }
 
     public void setOnConnectionEstablishedCallback(Runnable callback) {
-        onConnectionEstablishedCallback.set(callback); // Use AtomicReference for thread safety
+        onConnectionEstablishedCallback.set(callback);
     }
 
     public boolean isConnectionEstablished() {
@@ -47,8 +47,12 @@ public class SimulationWebSocketHandler extends TextWebSocketHandler {
     }
 
     public synchronized void broadcast(String endpoint, String message) {
+        if (Thread.currentThread().isInterrupted()) {
+            return;
+        }
+
         sessionMap.forEach((session, status) -> {
-            if (session.isOpen() && session.getUri() != null && session.getUri().getPath().equals(endpoint)) {
+            if (session.isOpen() && session.getUri().getPath().equals(endpoint)) {
                 try {
                     session.sendMessage(new TextMessage(message));
                 } catch (IOException e) {
