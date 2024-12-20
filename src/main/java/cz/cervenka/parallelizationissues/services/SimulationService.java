@@ -6,22 +6,27 @@ import cz.cervenka.parallelizationissues.util.Agent;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Component
 public class SimulationService {
 
     private final SimulationWebSocketHandler webSocketHandler;
+    private Runnable currentSimulation;
+    private final Object lock = new Object();
+
 
     public SimulationService(SimulationWebSocketHandler webSocketHandler) {
         this.webSocketHandler = webSocketHandler;
-        //this.webSocketHandler.setOnConnectionEstablishedCallback(this::startSimulation);
+        this.webSocketHandler.setOnConnectionEstablishedCallback(this::startSimulation);
     }
 
 
     public void simulateDeadlock(SimulationTask task) {
+        runSimulation(() -> runSimulateDeadlock(task));
+    }
+
+    public void runSimulateDeadlock(SimulationTask task) {
         System.out.println("Deadlock simulation started...");
         webSocketHandler.broadcast("/ws/problems/deadlock", "Deadlock simulation started...");
 
@@ -75,7 +80,15 @@ public class SimulationService {
         task.startAll();
     }
 
+
     public void simulateStarvation(SimulationTask task) {
+        runSimulation(() -> runSimulateStarvation(task));
+    }
+
+    public void runSimulateStarvation(SimulationTask task) {
+        System.out.println("Starvation simulation started...");
+        webSocketHandler.broadcast("/ws/problems/starvation", "Starvation simulation started...");
+
         Runnable highPriorityTask = getRunnable(webSocketHandler);
 
         Runnable lowPriorityTask = () -> {
@@ -121,6 +134,10 @@ public class SimulationService {
     }
 
     public void simulateLivelock(SimulationTask task) {
+        runSimulation(() -> runSimulateLivelock(task));
+    }
+
+    public void runSimulateLivelock(SimulationTask task) {
         System.out.println("Livelock simulation started...");
         webSocketHandler.broadcast("/ws/problems/livelock", "Livelock simulation started...");
 
@@ -166,10 +183,33 @@ public class SimulationService {
         task.startAll();
     }
 
-    private void startSimulation() {
-        // Once the WebSocket connection is established, you can start the simulation
-        // Example: Call the actual simulation methods here or trigger whatever you need
-        simulateDeadlock(new SimulationTask());  // For example, starting the deadlock simulation
+
+    public void runSimulation(Runnable simulation) {
+        synchronized (lock) {
+            System.out.println("Setting up new simulation...");
+            this.currentSimulation = simulation;
+
+            if (webSocketHandler.isConnectionEstablished()) {
+                System.out.println("WebSocket connection is ready. Starting simulation immediately.");
+                startSimulation();
+            } else {
+                System.out.println("WebSocket connection not yet established. Waiting...");
+            }
+        }
     }
+
+    private void startSimulation() {
+        synchronized (lock) {
+            System.out.println("Checking if simulation can be started...");
+            if (currentSimulation != null) {
+                System.out.println("Starting simulation...");
+                currentSimulation.run();
+                currentSimulation = null;
+            } else {
+                System.out.println("No simulation to start.");
+            }
+        }
+    }
+
 
 }

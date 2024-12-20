@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Controller class for handling simulation-related HTTP requests.
+ * This class manages different types of concurrency problem simulations.
+ */
 @Controller
 @RequestMapping("/simulate-problems")
 public class SimulationController {
@@ -18,10 +22,22 @@ public class SimulationController {
     private final ConcurrentHashMap<String, SimulationTask> currentTasks = new ConcurrentHashMap<>();
     private final SimulationService service;
 
+    /**
+     * Constructs a new SimulationController with the given SimulationService.
+     *
+     * @param service The SimulationService to be used for running simulations.
+     */
     public SimulationController(SimulationService service) {
         this.service = service;
     }
 
+    /**
+     * Handles GET requests for the deadlock simulation page.
+     * Initiates a deadlock simulation and prepares the model for view rendering.
+     *
+     * @param model The Model object to be populated with attributes for the view.
+     * @return A String representing the name of the view to be rendered.
+     */
     @GetMapping("/deadlock-page")
     public String simulateDeadlockPage(Model model) {
         SimulationTask task = new SimulationTask();
@@ -33,6 +49,13 @@ public class SimulationController {
         return "problem_simulation";
     }
 
+    /**
+     * Handles GET requests for the starvation simulation page.
+     * Initiates a starvation simulation and prepares the model for view rendering.
+     *
+     * @param model The Model object to be populated with attributes for the view.
+     * @return A String representing the name of the view to be rendered.
+     */
     @GetMapping("/starvation-page")
     public String simulateStarvationPage(Model model) {
         SimulationTask task = new SimulationTask();
@@ -44,6 +67,13 @@ public class SimulationController {
         return "problem_simulation";
     }
 
+    /**
+     * Handles GET requests for the livelock simulation page.
+     * Initiates a livelock simulation and prepares the model for view rendering.
+     *
+     * @param model The Model object to be populated with attributes for the view.
+     * @return A String representing the name of the view to be rendered.
+     */
     @GetMapping("/livelock-page")
     public String simulateLivelockPage(Model model) {
         SimulationTask task = new SimulationTask();
@@ -55,6 +85,13 @@ public class SimulationController {
         return "problem_simulation";
     }
 
+    /**
+     * Handles GET requests to stop the current simulation.
+     * Interrupts the current simulation task and redirects to the problems page.
+     *
+     * @param response The HttpServletResponse object used for redirection.
+     * @throws IOException If an input or output exception occurs during redirection.
+     */
     @GetMapping("/stop")
     public void stopSimulation(HttpServletResponse response) throws IOException {
         response.sendRedirect("/problems");

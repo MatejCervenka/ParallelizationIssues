@@ -17,8 +17,10 @@ public class SimulationTask {
     }
 
     public void interruptAll() {
-        for (Thread thread : threads) {
-            thread.interrupt();
-        }
+        threads.forEach(thread -> {
+            if (thread != null && thread.isAlive()) {
+                thread.interrupt();
+            }
+        });
     }
 }

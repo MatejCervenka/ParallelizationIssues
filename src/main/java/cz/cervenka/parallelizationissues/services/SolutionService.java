@@ -8,22 +8,26 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Component
 public class SolutionService {
 
     private final SimulationWebSocketHandler webSocketHandler;
+    private Runnable currentSimulation;
+
 
     public SolutionService(SimulationWebSocketHandler webSocketHandler) {
         this.webSocketHandler = webSocketHandler;
-        //this.webSocketHandler.setOnConnectionEstablishedCallback(this::startSimulation);
+        this.webSocketHandler.setOnConnectionEstablishedCallback(this::startSimulation);
     }
 
 
     public void solveDeadlock(SimulationTask task) {
+        runSimulation(() -> runSolveDeadlock(task));
+    }
+
+    public void runSolveDeadlock(SimulationTask task) {
         System.out.println("Deadlock solutions simulation started...");
         webSocketHandler.broadcast("/ws/solutions/deadlock", "Deadlock solutions simulation started...");
 
@@ -74,10 +78,14 @@ public class SolutionService {
 
 
     public void solveStarvation(SimulationTask task) {
+        runSimulation(() -> runSolveStarvation(task));
+    }
+
+    private void runSolveStarvation(SimulationTask task) {
         System.out.println("Starvation solutions simulation started...");
         webSocketHandler.broadcast("/ws/solutions/starvation", "Starvation solutions simulation started...");
 
-        Lock reservationLock = new ReentrantLock(true); // Enable fairness
+        Lock reservationLock = new ReentrantLock(true); // Fair lock
 
         Thread highPriorityThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
@@ -85,10 +93,8 @@ public class SolutionService {
                     reservationLock.lock();
                     System.out.println("High-priority user: Reserved a slot.");
                     webSocketHandler.broadcast("/ws/solutions/starvation", "High-priority user: Reserved a slot.");
-                    Thread.sleep(500); // Simulate work
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
-                    System.out.println("High-priority user interrupted.");
-                    webSocketHandler.broadcast("/ws/solutions/starvation", "High-priority user interrupted.");
                     Thread.currentThread().interrupt();
                 } finally {
                     reservationLock.unlock();
@@ -102,10 +108,8 @@ public class SolutionService {
                     reservationLock.lock();
                     System.out.println("Low-priority user: Reserved a slot.");
                     webSocketHandler.broadcast("/ws/solutions/starvation", "Low-priority user: Reserved a slot.");
-                    Thread.sleep(1000); // Simulate work
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    System.out.println("Low-priority user interrupted.");
-                    webSocketHandler.broadcast("/ws/solutions/starvation", "Low-priority user interrupted.");
                     Thread.currentThread().interrupt();
                 } finally {
                     reservationLock.unlock();
@@ -115,12 +119,14 @@ public class SolutionService {
 
         task.addThread(highPriorityThread);
         task.addThread(lowPriorityThread);
-
         task.startAll();
     }
 
-
     public void solveLivelock(SimulationTask task) {
+        runSimulation(() -> runSolveLivelock(task));
+    }
+
+    public void runSolveLivelock(SimulationTask task) {
         System.out.println("Livelock solutions simulation started...");
         webSocketHandler.broadcast("/ws/solutions/livelock", "Livelock solutions simulation started...");
 
@@ -181,9 +187,30 @@ public class SolutionService {
         task.startAll();
     }
 
+    private void runSimulation(Runnable simulation) {
+        synchronized (this) {
+            this.currentSimulation = simulation;
+            System.out.println("Simulation set. Checking WebSocket connection status...");
+
+            if (webSocketHandler.isConnectionEstablished()) {
+                System.out.println("WebSocket connection is ready. Starting simulation immediately.");
+                startSimulation();
+            } else {
+                System.out.println("WebSocket connection not yet established. Waiting...");
+            }
+        }
+    }
+
     private void startSimulation() {
-        // Once the WebSocket connection is established, you can start the simulation
-        // Example: Call the actual simulation methods here or trigger whatever you need
-        solveDeadlock(new SimulationTask());  // For example, starting the deadlock simulation
+        synchronized (this) {
+            System.out.println("Checking if simulation can be started...");
+            if (currentSimulation != null) {
+                System.out.println("Starting simulation...");
+                currentSimulation.run();
+                currentSimulation = null; // Clear after starting
+            } else {
+                System.out.println("No simulation to start.");
+            }
+        }
     }
 }
