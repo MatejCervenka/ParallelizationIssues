@@ -2,6 +2,9 @@
 
 This project demonstrates solutions to common parallelization issues such as **deadlock**, **starvation**, and **livelock**. It includes simulations of these problems and their solutions, displayed in real-time via WebSocket connections.
 
+## Page
+- Deployed page on IP Address: [16.171.170.57](http://16.171.170.57/)
+
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Features](#features)
