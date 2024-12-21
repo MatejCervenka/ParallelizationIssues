@@ -87,7 +87,7 @@
 <script>
     const simulationType = window.location.pathname.split('/').pop();
     const wsEndpoint = `/ws/solutions/${simulationType.replace("-page", "")}`;
-    const socket = new WebSocket(`ws://localhost:8082${wsEndpoint}`);
+    const socket = new WebSocket(`ws://16.171.170.57${decodeURIComponent(wsEndpoint)}`);
 
     const documentationContent = {
         deadlock: {
