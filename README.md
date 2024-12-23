@@ -2,7 +2,8 @@
 
 This project demonstrates solutions to common parallelization issues such as **deadlock**, **starvation**, and **livelock**. It includes simulations of these problems and their solutions, displayed in real-time via WebSocket connections.
 
-## Page
+## Page  
+### - Unfortunately due to hosting on AWS and its Christmas busyness, server has frequent outages which result in web page not working
 - Deployed page on IP Address: [16.171.170.57](http://16.171.170.57/)
 
 ## Table of Contents
