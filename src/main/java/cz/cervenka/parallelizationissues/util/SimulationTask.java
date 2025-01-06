@@ -8,7 +8,7 @@ import java.util.List;
  * It allows adding threads to a list, starting all threads simultaneously, and interrupting all threads.
  */
 public class SimulationTask {
-    private final List<Thread> threads = new ArrayList<>();  // List of threads managed by the simulation task
+    private final List<Thread> threads = new ArrayList<>();
 
     /**
      * Adds a thread to the list of threads managed by the simulation task.

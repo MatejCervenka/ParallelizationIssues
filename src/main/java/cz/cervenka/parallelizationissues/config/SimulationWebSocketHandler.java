@@ -64,7 +64,7 @@ public class SimulationWebSocketHandler extends TextWebSocketHandler {
         Runnable callback = onConnectionEstablishedCallback.get();
         if (callback != null) {
             System.out.println("Executing onConnectionEstablishedCallback...");
-            callback.run(); // Execute the latest callback
+            callback.run();
         }
     }
 
